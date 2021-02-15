@@ -10,11 +10,15 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine","ejs");
 
 const urlDatabase = {
-
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
-
 }
+
+const generateRandomString = function(){
+//returns 6 random chars
+  return Math.random().toString(16).substr(2, 6)
+}
+generateRandomString();
 
 app.get('/', (req, res) => {
   res.send("Hello!");
