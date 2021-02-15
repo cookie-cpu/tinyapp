@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/cookie-cpu/tinyapp/issues"
   },
-  "homepage": "https://github.com/cookie-cpu/tinyapp#readme"
+  "homepage": "https://github.com/cookie-cpu/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
