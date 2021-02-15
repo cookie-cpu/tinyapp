@@ -56,7 +56,7 @@ app.post('/urls', (req, res) => {
 
   //console.log(req.body);
   //console.log(req.params)
-  res.send("OK!")
+  res.redirect('/urls')
 })
 
 
