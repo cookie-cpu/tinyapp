@@ -33,7 +33,7 @@ app.get("/urls.json", (req, res) => {
 
 
 
-
+//READ
 //Renders the URL page
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
@@ -51,8 +51,17 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//Redirects the user to the actual longurl webpage based on the shorturl
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
 
 
+
+
+
+//CREATE
 // generates new shorturl and redirects to a page showing the url
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
@@ -63,13 +72,9 @@ app.post('/urls', (req, res) => {
 });
 
 
-//Redirects the user to the actual longurl webpage based on the shorturl
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
 
-
+//DELETE
+//Performs a database deletion and redirects back to the url homepage
 app.post("/urls/:shortURL/delete" , (req, res) => {
   //delete users["5315"] urlDatabase[shortURL]
   delete urlDatabase[req.params.shortURL];
@@ -77,10 +82,17 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
   res.redirect("/urls")
 })
 
+
+//UPDATE
+//Updates the url by saving the new value from the form in place of the old longURL
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.newURL;
   res.redirect("/urls")
 })
+
+
+
+
 
 //Begins listening on the PORT variable
 app.listen(PORT, () => {
