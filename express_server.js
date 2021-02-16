@@ -21,7 +21,8 @@ const generateRandomString = function () {
 
 
 app.get('/', (req, res) => {
-  res.send("Hello! Welcome to the homepage");
+  res.redirect(`/urls/`)
+  //res.send("Hello! Welcome to the homepage");
 });
 
 app.get('/urls', (req, res) => {
@@ -41,11 +42,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
@@ -67,6 +63,7 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
   // delete req.body.shortURL
   res.redirect("/urls")
 })
+
 
 
 app.listen(PORT, () => {
