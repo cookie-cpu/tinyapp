@@ -64,6 +64,17 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
   res.redirect("/urls")
 })
 
+app.get("/urls/:shortURL/update" , (req, res) => {
+  
+  //res.redirect("/urls")
+})
+
+app.post("/urls/:shortURL/update", (req, res) => {
+
+
+  //res.redirect("/urls")
+})
+
 
 
 app.listen(PORT, () => {
