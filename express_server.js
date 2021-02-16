@@ -1,4 +1,4 @@
-const { request } = require("express");
+
 const bodyParser = require('body-parser');
 
 const express = require('express');
@@ -14,7 +14,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-const generateRandomString = function() {
+const generateRandomString = function () {
   //returns 6 random chars
   return Math.random().toString(16).substr(2, 6);
 };
@@ -34,7 +34,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
@@ -52,11 +52,12 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[shortURL] = req.body.longURL;
 
-  res.redirect('/urls');
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase.longURL;
+  const longURL = urlDatabase[req.params.shortURL];
+
   res.redirect(longURL);
 });
 
