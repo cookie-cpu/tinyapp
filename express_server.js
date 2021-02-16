@@ -1,7 +1,9 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+const cookieParser = require('cookie-parser')
 
 const app = express();
+app.use(cookieParser())
 const PORT = 8080;
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -92,7 +94,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 
 app.post('/login', (req,res) => {
-
+  res.cookie("username", req.body.username)
 })
 
 
