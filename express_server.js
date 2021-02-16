@@ -1,7 +1,6 @@
-
 const bodyParser = require('body-parser');
-
 const express = require('express');
+
 const app = express();
 const PORT = 8080;
 
@@ -14,8 +13,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Returns 6 random chars for shortURL code
 const generateRandomString = function () {
-  //returns 6 random chars
   return Math.random().toString(16).substr(2, 6);
 };
 
@@ -23,6 +22,17 @@ const generateRandomString = function () {
 app.get('/', (req, res) => {
   res.redirect(`/urls/`)
 });
+
+//Presents the database in JSON format
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+
+
+
+
+
 
 //Renders the URL page
 app.get('/urls', (req, res) => {
@@ -41,10 +51,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//Presents the database in JSON format
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+
 
 // generates new shorturl and redirects to a page showing the url
 app.post('/urls', (req, res) => {
@@ -55,11 +62,13 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+
 //Redirects the user to the actual longurl webpage based on the shorturl
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
 
 app.post("/urls/:shortURL/delete" , (req, res) => {
   //delete users["5315"] urlDatabase[shortURL]
@@ -68,17 +77,10 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
   res.redirect("/urls")
 })
 
-app.get("/urls/:shortURL/update" , (req, res) => {
-  
-  //res.redirect("/urls")
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.newURL;
+  res.redirect("/urls")
 })
-
-app.post("/urls/:shortURL/update", (req, res) => {
-
-
-  //res.redirect("/urls")
-})
-
 
 //Begins listening on the PORT variable
 app.listen(PORT, () => {

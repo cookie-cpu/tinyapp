@@ -29,7 +29,7 @@
             <td><%= url %></td>
             <td><%= urls[url] %></td>
             <td><form method="POST" action="/urls/<%= url %>/delete"><button type="submit">delete</button></form></td>
-            <td><a href="/urls/<%= url %>/update">edit</a><button type="submit" >edit</button></td>
+            <td><form method="GET" action="/urls/<%= url %>"><button type="submit">edit</button></form></td>
           </tr>
         <% } %>
       </tbody>
