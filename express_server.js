@@ -95,6 +95,8 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post('/login', (req,res) => {
   res.cookie("username", req.body.username)
+  console.log(`${req.body.username} is trying to log in`)
+  res.redirect("/urls")
 })
 
 
