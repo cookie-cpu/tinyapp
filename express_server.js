@@ -22,7 +22,7 @@ const users = {
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
-  
+
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
@@ -127,6 +127,15 @@ app.post('/logout', (req,res) => {
   res.clearCookie("username")
   res.redirect("/urls")
 })
+
+app.post('/register', (req,res) => {
+  const userID = generateRandomString();
+
+  users[userID] = req.body.email;
+  console.log(users)
+  res.redirect("/urls")
+})
+
 
 
 
