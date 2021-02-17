@@ -11,6 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 
+
 //Global Objects
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -29,19 +30,40 @@ const users = {
   }
 };
 
+//
+//Functions
+//
 
-//Returns 6 random chars for shortURL code
+
+//Returns 6 random chars
 const generateRandomString = function () {
   return Math.random().toString(16).substr(2, 6);
+};
+
+//Returns true if email passed in exists in database
+const emailLookup = function(email) {
+  for (user in users){
+    if (users[user].email === email) {
+      return true
+    } 
+    return false;
+  }
 };
 
 
 
 
-//Redirects base route to urls page
+
+//
+//ROUTING
+//
+
+
+//Redirects base route to main urls page
 app.get('/', (req, res) => {
   res.redirect(`/urls/`)
 });
+
 
 //Presents the database in JSON format
 app.get("/urls.json", (req, res) => {
@@ -51,9 +73,29 @@ app.get("/users.json", (req, res) => {
   res.json(users);
 });
 
+//Redirects the user to the actual longurl webpage based on the shorturl
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
+
+
+//Renders the register and login pages upon GET requests for those pages
+app.get('/register', (req,res) => {
+  res.render("register")
+})
+
+app.get('/login', (req,res) => {
+  res.render("login")
+})
+
+
+
+
 
 //READ
-//Renders the URL page reading from the database
+//Renders the URL page reading from the database to display urls
 app.get('/urls', (req, res) => {
   const templateVars = 
   { urls: urlDatabase,
@@ -61,7 +103,8 @@ app.get('/urls', (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//Renders the new url page
+
+//Renders the new url page to add a new url
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]]
@@ -69,7 +112,8 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//Renders the url_show page and pases in the database as an object for later use
+
+//Renders the url_show page and pases in the short and long urls to show the user
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
@@ -78,11 +122,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//Redirects the user to the actual longurl webpage based on the shorturl
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
+
 
 
 
@@ -103,9 +143,7 @@ app.post('/urls', (req, res) => {
 //DELETE
 //Performs a database deletion and redirects back to the url homepage
 app.post("/urls/:shortURL/delete" , (req, res) => {
-  //delete users["5315"] urlDatabase[shortURL]
   delete urlDatabase[req.params.shortURL];
-  // delete req.body.shortURL
   res.redirect("/urls")
 })
 
@@ -117,19 +155,7 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls")
 })
 
-app.get('/register', (req,res) => {
-  res.render("register")
-})
-app.get('/login', (req,res) => {
-  res.render("login")
-})
 
-
-app.post('/login', (req,res) => {
-  res.cookie("username", req.body.username)
-  console.log(`${req.body.username} is trying to log in`)
-  res.redirect("/urls")
-})
 
 //Clears cookies
 app.post('/logout', (req,res) => {
@@ -137,14 +163,30 @@ app.post('/logout', (req,res) => {
   res.redirect("/urls")
 })
 
-const emailLookup = function(email) {
-  for (user in users){
-    if (users[user].email === email) {
-      return true
-    } 
-    return false;
+
+
+
+
+
+
+app.post('/login', (req,res) => {
+  const userID = generateRandomString();
+  let email = req.body.email;
+  let password = req.body.password;
+
+  if (!emailLookup(email)){
+    res.status(403).send(`Email ${email} doesn't exist`)
   }
-};
+
+  //res.cookie("username", req.body.username)
+  console.log(`${req.body.email} is trying to log in`)
+  console.log(`email: ${email} pass: ${password}`)
+  res.redirect("/urls")
+})
+
+
+
+
 
 //Saves user data from registration to users object
 app.post('/register', (req,res) => {
@@ -171,6 +213,11 @@ app.post('/register', (req,res) => {
   console.log(users)
   res.redirect("/urls")
 })
+
+
+
+
+
 
 
 
