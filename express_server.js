@@ -22,7 +22,6 @@ const users = {
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
-
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
@@ -36,6 +35,9 @@ const generateRandomString = function () {
   return Math.random().toString(16).substr(2, 6);
 };
 
+
+
+
 //Redirects base route to urls page
 app.get('/', (req, res) => {
   res.redirect(`/urls/`)
@@ -45,6 +47,9 @@ app.get('/', (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+app.get("/users.json", (req, res) => {
+  res.json(users);
+});
 
 
 //READ
@@ -52,14 +57,14 @@ app.get("/urls.json", (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = 
   { urls: urlDatabase,
-    users };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_index", templateVars);
 });
 
 //Renders the new url page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    users
+    user: users[req.cookies["user_id"]]
   }
   res.render("urls_new", templateVars);
 });
@@ -69,7 +74,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL],
-    users };
+    user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -142,8 +147,8 @@ app.post('/register', (req,res) => {
   res.cookie("user_id", userID)
 
 
-  console.log(req.body.email)
-  console.log(req.body.password)
+  //console.log(req.body.email)
+  //console.log(req.body.password)
   console.log(users)
   res.redirect("/urls")
 })
