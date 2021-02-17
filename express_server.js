@@ -134,7 +134,7 @@ app.post('/logout', (req,res) => {
   res.redirect("/urls")
 })
 
-const emailLookup = function() {
+const emailLookup = function(email) {
   for (user in users){
     if (users[user].email === email) {
       return true
@@ -151,22 +151,18 @@ app.post('/register', (req,res) => {
 
   if (email === "" || password === "") {//Error if empty strings as params
     res.status(400).send("Email or Password cannot be an empty string");
-  } else if (/* email already exists in object */) { //Error if 
-    //email already exists
-  } else {
+  } else if (emailLookup(email)) { //Error if email is already in users database
+    res.status(400).send("Email already exists");
+  } else { //Adds new user to database if no errors
 
+      users[userID] = {
+      id: userID,
+      email: req.body.email,
+      password: req.body.password
+    }
+  
+    res.cookie("user_id", userID)
   }
-
-
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
-  }
-
-  res.cookie("user_id", userID)
-
-
   //console.log(req.body.email)
   //console.log(req.body.password)
   console.log(users)
