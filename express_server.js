@@ -15,6 +15,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
 //Returns 6 random chars for shortURL code
 const generateRandomString = function () {
   return Math.random().toString(16).substr(2, 6);
@@ -31,25 +32,29 @@ app.get("/urls.json", (req, res) => {
 });
 
 
-
-
-
-
 //READ
-//Renders the URL page
+//Renders the URL page reading from the database
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = 
+  { urls: urlDatabase,
+    username: req.cookies.username };
   res.render("urls_index", templateVars);
 });
 
 //Renders the new url page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies.username
+  }
+  res.render("urls_new", templateVars);
 });
 
 //Renders the url_show page and pases in the database as an object for later use
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies.username };
   res.render("urls_show", templateVars);
 });
 
