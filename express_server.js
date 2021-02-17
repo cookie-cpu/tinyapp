@@ -131,7 +131,13 @@ app.post('/logout', (req,res) => {
 app.post('/register', (req,res) => {
   const userID = generateRandomString();
 
-  users[userID] = req.body.email;
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  }
+  console.log(req.body.email)
+  console.log(req.body.password)
   console.log(users)
   res.redirect("/urls")
 })
