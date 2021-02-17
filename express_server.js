@@ -137,6 +137,13 @@ app.post('/logout', (req,res) => {
 //Saves user data from registration to users object
 app.post('/register', (req,res) => {
   const userID = generateRandomString();
+  let email = req.body.email;
+  let password = req.body.password;
+
+  if (email === "" || password === "") {
+    res.status(400).send("Email or Password cannot be an empty string");
+  }
+
 
   users[userID] = {
     id: userID,
