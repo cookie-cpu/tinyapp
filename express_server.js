@@ -40,11 +40,11 @@ const generateRandomString = function () {
   return Math.random().toString(16).substr(2, 6);
 };
 
-//Returns true if email passed in exists in database
+//Returns user ID if email passed in exists in database
 const emailLookup = function(email) {
   for (user in users){
     if (users[user].email === email) {
-      return true
+      return user
     } 
     return false;
   }
@@ -172,15 +172,31 @@ app.post('/logout', (req,res) => {
 app.post('/login', (req,res) => {
   const userID = generateRandomString();
   let email = req.body.email;
-  let password = req.body.password;
+  let formPassword = req.body.password;
+  const user = emailLookup(email)
 
-  if (!emailLookup(email)){
+  if (emailLookup(email)){
+      //compare form pass with db pass
+      //is form pass same as db pass at key email
+      //if not the same, 403 error
+      //if same set user_id cookie as userID
+    if (user.password === formPassword){
+      console.log("Passwords match")
+    }
+    
+  } 
+
+  else if (!emailLookup(email)) {
     res.status(403).send(`Email ${email} doesn't exist`)
+  } 
+
+  else {
+    //error
   }
 
   //res.cookie("username", req.body.username)
   console.log(`${req.body.email} is trying to log in`)
-  console.log(`email: ${email} pass: ${password}`)
+  console.log(`email: ${email} password: ${formPassword}`)
   res.redirect("/urls")
 })
 
@@ -194,10 +210,12 @@ app.post('/register', (req,res) => {
   let email = req.body.email;
   let password = req.body.password;
 
-  if (email === "" || password === "") {//Error if empty strings as params
+  if (email === "" || password === "") { //Error if empty strings as params
     res.status(400).send("Email or Password cannot be an empty string");
+
   } else if (emailLookup(email)) { //Error if email is already in users database
     res.status(400).send("Email already exists");
+
   } else { //Adds new user to database if no errors
 
       users[userID] = {
