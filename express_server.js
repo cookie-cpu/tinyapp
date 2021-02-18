@@ -56,6 +56,19 @@ const emailLookup = function(email) {
   }  return false;
 };
 
+//takes ID
+// returns all urls where ID matches
+const urlsForUser = function(id){
+  let output = {};
+  for (let urlID in urlDatabase) {
+    if (id === urlDatabase[urlID].userID) {
+      output[shortURL] =urlDatabase[urlID].longURL
+    }
+  }
+  return output
+
+}
+
 
 
 
