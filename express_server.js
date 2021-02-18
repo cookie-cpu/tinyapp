@@ -30,10 +30,12 @@ const users = {
   }
 };
 
+
+
+
 //
 //Functions
 //
-
 
 //Returns 6 random chars
 const generateRandomString = function () {
@@ -42,12 +44,12 @@ const generateRandomString = function () {
 
 //Returns user ID if email passed in exists in database
 const emailLookup = function(email) {
-  for (user in users){
+  for (let user in users){
     if (users[user].email === email) {
       return user
     } 
-    return false;
-  }
+   
+  }  return false;
 };
 
 
@@ -176,28 +178,18 @@ app.post('/login', (req,res) => {
   const user = emailLookup(email)
 
   if (emailLookup(email)){
-      //compare form pass with db pass
-      //is form pass same as db pass at key email
-      //if not the same, 403 error
-      //if same set user_id cookie as userID
-    if (user.password === formPassword){
+    if (users[user].password === formPassword){
       console.log("Passwords match")
+      res.cookie("user_id", user)
+      res.redirect("/urls")
+    } else {
+      res.status(403).send("Password is incorrect")
+      console.log("Passwords didnt match")
     }
-    
-  } 
 
-  else if (!emailLookup(email)) {
+  } else {
     res.status(403).send(`Email ${email} doesn't exist`)
   } 
-
-  else {
-    //error
-  }
-
-  //res.cookie("username", req.body.username)
-  console.log(`${req.body.email} is trying to log in`)
-  console.log(`email: ${email} password: ${formPassword}`)
-  res.redirect("/urls")
 })
 
 
