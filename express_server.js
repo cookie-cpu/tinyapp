@@ -58,11 +58,11 @@ const emailLookup = function(email) {
 
 //takes ID
 // returns all urls where ID matches
-const urlsForUser = function(id){
+const urlsForUser = function(urlDatabase, id){
   let output = {};
   for (let urlID in urlDatabase) {
     if (id === urlDatabase[urlID].userID) {
-      output[shortURL] =urlDatabase[urlID].longURL
+      output[shortURL] = urlDatabase[urlID].longURL
     }
   }
   return output
@@ -116,10 +116,20 @@ app.get('/login', (req,res) => {
 //READ
 //Renders the URL page reading from the database to display urls
 app.get('/urls', (req, res) => {
-  const templateVars = 
-  { urls: urlDatabase,
-    user: users[req.cookies["user_id"]] };
-  res.render("urls_index", templateVars);
+  if (!req.cookies["user_id"]){ //no user cookie found
+    res.redirect('/login')
+  } 
+  else {
+    
+  const userSpecificDB = urlsForUser(urlDatabase, req.cookies["user_id"]) //sorts database by user ID and only returns matching urls
+  
+  const templateVars = { 
+    urls: userSpecificDB,
+    user: users[req.cookies["user_id"]] 
+  }
+
+    res.render("urls_index", templateVars)
+  }
 });
 
 
@@ -137,11 +147,22 @@ app.get("/urls/new", (req, res) => {
 
 //Renders the url_show page and pases in the short and long urls to show the user
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { 
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies["user_id"]] };
-  res.render("urls_show", templateVars);
+  if (!req.cookies["user_id"]){
+    res.redirect('/login')
+  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    const templateVars = { 
+      shortURL: req.params.shortURL, 
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      user: users[req.cookies["user_id"]] };
+      console.log(urlDatabase)
+    res.render("urls_show", templateVars);
+  } else {
+    res.send("Not autorized to see this")
+  }
+  // const userSpecificDB = urlsForUser(urlDatabase, req.cookies["user_id"])
+
+
+  
 });
 
 
@@ -155,7 +176,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
 
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -165,7 +186,10 @@ app.post('/urls', (req, res) => {
 //DELETE
 //Performs a database deletion and redirects back to the url homepage
 app.post("/urls/:shortURL/delete" , (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  if (!req.cookies["user_id"]){
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls")
+  }
   res.redirect("/urls")
 })
 
