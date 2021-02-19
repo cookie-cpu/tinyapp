@@ -54,33 +54,7 @@ const users = {
 //
 //Functions
 //
-
-//Returns 6 random chars
-const generateRandomString = function () {
-  return Math.random().toString(16).substr(2, 6);
-};
-
-//Returns user ID if email passed in exists in database
-const emailLookup = function(email ,database) {
-  for (let user in database){
-    if (database[user].email === email) {
-      return user
-    } 
-   
-  }  return false;
-};
-
-//takes ID and database
-// returns all urls where ID matches
-const urlsForUser = function(urlDatabase, id){
-  let output = {};
-  for (let urlID in urlDatabase) {
-    if (id === urlDatabase[urlID].userID) {
-      output[urlID] = urlDatabase[urlID].longURL
-    }
-  }
-  return output
-};
+const { emailLookup, generateRandomString, urlsForUser } = require('./helpers');
 
 
 
@@ -129,7 +103,9 @@ app.get('/login', (req,res) => {
 //Renders the URL page reading from the database to display urls
 app.get('/urls', (req, res) => {
   if (!req.session.user_id){ //no user cookie found
-    res.redirect('/login')
+    //res.redirect('/login')
+    //res.send("Must login first")
+    res.redirect('/notUser')
   } 
   else {
     
@@ -144,6 +120,10 @@ app.get('/urls', (req, res) => {
   }
 });
 
+app.get('/notUser', (req,res) => {
+  res.render("notUser")
+})
+
 
 //Renders the new url page to add a new url
 app.get("/urls/new", (req, res) => {
@@ -153,7 +133,7 @@ app.get("/urls/new", (req, res) => {
     }
     res.render("urls_new", templateVars);
   }
-  res.redirect('/')
+  res.redirect('/notUser')
 });
 
 
@@ -209,8 +189,6 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
 //UPDATE
 //Updates the url by saving the new value from the form in place of the old longURL
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-
   if (!req.session.user_id){
     res.redirect('/login')
   } else if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
