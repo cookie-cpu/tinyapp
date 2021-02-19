@@ -1,12 +1,21 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const cookieParser = require('cookie-parser')
+const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 
 
 const app = express();
-app.use(cookieParser())
+
+//app.use(cookieParser())
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['tinyapp', 'keys']
+}));
+
 const PORT = 8080;
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -67,7 +76,7 @@ const urlsForUser = function(urlDatabase, id){
   let output = {};
   for (let urlID in urlDatabase) {
     if (id === urlDatabase[urlID].userID) {
-      output[shortURL] = urlDatabase[urlID].longURL
+      output[urlID] = urlDatabase[urlID].longURL
     }
   }
   return output
@@ -116,20 +125,19 @@ app.get('/login', (req,res) => {
 
 
 
-
 //READ
 //Renders the URL page reading from the database to display urls
 app.get('/urls', (req, res) => {
-  if (!req.cookies["user_id"]){ //no user cookie found
+  if (!req.session.user_id){ //no user cookie found
     res.redirect('/login')
   } 
   else {
     
-  const userSpecificDB = urlsForUser(urlDatabase, req.cookies["user_id"]) //sorts database by user ID and only returns matching urls
+  const userSpecificDB = urlsForUser(urlDatabase, req.session.user_id) //sorts database by user ID and only returns matching urls
   
   const templateVars = { 
     urls: userSpecificDB,
-    user: users[req.cookies["user_id"]] 
+    user: users[req.session.user_id] 
   }
 
     res.render("urls_index", templateVars)
@@ -139,9 +147,9 @@ app.get('/urls', (req, res) => {
 
 //Renders the new url page to add a new url
 app.get("/urls/new", (req, res) => {
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
     const templateVars = {
-      user: users[req.cookies["user_id"]]
+      user: users[req.session.user_id]
     }
     res.render("urls_new", templateVars);
   }
@@ -151,19 +159,19 @@ app.get("/urls/new", (req, res) => {
 
 //Renders the url_show page and pases in the short and long urls to show the user
 app.get("/urls/:shortURL", (req, res) => {
-  if (!req.cookies["user_id"]){
+  if (!req.session.user_id){
     res.redirect('/login')
-  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+  } else if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
     const templateVars = { 
       shortURL: req.params.shortURL, 
       longURL: urlDatabase[req.params.shortURL].longURL,
-      user: users[req.cookies["user_id"]] };
+      user: users[req.session.user_id] };
       //console.log(urlDatabase)
     res.render("urls_show", templateVars);
   } else {
     res.send("Not autorized to see this")
   }
-  // const userSpecificDB = urlsForUser(urlDatabase, req.cookies["user_id"])
+  // const userSpecificDB = urlsForUser(urlDatabase, req.session.user_id)
 });
 
 
@@ -177,7 +185,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
 
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id}
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -187,9 +195,9 @@ app.post('/urls', (req, res) => {
 //DELETE
 //Performs a database deletion and redirects back to the url homepage
 app.post("/urls/:shortURL/delete" , (req, res) => {
-  if (!req.cookies["user_id"]){
+  if (!req.session.user_id){
     res.send("Not autorized to delete this")
-  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID){
+  } else if (req.session.user_id === urlDatabase[req.params.shortURL].userID){
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls")
   } else {
@@ -201,9 +209,9 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
 //UPDATE
 //Updates the url by saving the new value from the form in place of the old longURL
 app.post("/urls/:shortURL", (req, res) => {
-  if (!req.cookies["user_id"]){
+  if (!req.session.user_id){
     res.redirect('/login')
-  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+  } else if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
     urlDatabase[req.params.shortURL] = req.body.newURL;
     res.redirect("/urls")
   } else {
@@ -216,7 +224,8 @@ app.post("/urls/:shortURL", (req, res) => {
 
 //Clears cookies
 app.post('/logout', (req,res) => {
-  res.clearCookie("user_id")
+  req.session.user_id = null;
+  //res.clearCookie("user_id")
   res.redirect("/urls")
 })
 
@@ -231,11 +240,11 @@ app.post('/login', (req,res) => {
   let email = req.body.email;
   let formPassword = req.body.password;
   const user = emailLookup(email)
-  
+
   if (emailLookup(email)){
     if ((bcrypt.compareSync(formPassword, users[user].password))){
       console.log("Passwords match")
-      res.cookie("user_id", user)
+      req.session.user_id = user
       res.redirect("/urls")
     } else {
       res.status(403).send("Password is incorrect")
@@ -263,13 +272,13 @@ app.post('/register', (req,res) => {
     res.status(400).send("Email already exists");
 
   } else { //Adds new user to database if no errors
-     const hashed = bcrypt.hashSync(req.body.password, 10);
+     const hashed = bcrypt.hashSync(req.body.password, 10); //hashes the password before saving to db
       users[userID] = {
         id: userID,
         email: req.body.email,
         password: hashed
       }
-      res.cookie("user_id", userID)
+      req.session.user_id = userID
       console.log(users)
       res.redirect("/urls");}
 })
