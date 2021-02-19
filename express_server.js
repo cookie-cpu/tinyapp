@@ -61,9 +61,9 @@ const generateRandomString = function () {
 };
 
 //Returns user ID if email passed in exists in database
-const emailLookup = function(email) {
-  for (let user in users){
-    if (users[user].email === email) {
+const emailLookup = function(email ,database) {
+  for (let user in database){
+    if (database[user].email === email) {
       return user
     } 
    
@@ -209,17 +209,17 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
 //UPDATE
 //Updates the url by saving the new value from the form in place of the old longURL
 app.post("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+
   if (!req.session.user_id){
     res.redirect('/login')
   } else if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
-    urlDatabase[req.params.shortURL] = req.body.newURL;
+    urlDatabase[req.params.shortURL].longURL = req.body.newURL;
     res.redirect("/urls")
   } else {
     res.send("Not autorized to see this")
   }  
 })
-
-
 
 
 //Clears cookies
@@ -239,9 +239,9 @@ app.post('/login', (req,res) => {
   const userID = generateRandomString();
   let email = req.body.email;
   let formPassword = req.body.password;
-  const user = emailLookup(email)
+  const user = emailLookup(email, users)
 
-  if (emailLookup(email)){
+  if (emailLookup(email, users)){
     if ((bcrypt.compareSync(formPassword, users[user].password))){
       console.log("Passwords match")
       req.session.user_id = user
@@ -268,7 +268,7 @@ app.post('/register', (req,res) => {
   if (email === "" || password === "") { //Error if empty strings as params
     res.status(400).send("Email or Password cannot be an empty string");
 
-  } else if (emailLookup(email)) { //Error if email is already in users database
+  } else if (emailLookup(email, users)) { //Error if email is already in users database
     res.status(400).send("Email already exists");
 
   } else { //Adds new user to database if no errors
