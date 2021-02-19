@@ -1,6 +1,8 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const cookieParser = require('cookie-parser')
+const bcrypt = require('bcrypt');
+
 
 const app = express();
 app.use(cookieParser())
@@ -248,7 +250,6 @@ app.post('/login', (req,res) => {
 
 
 
-
 //Saves user data from registration to users object
 app.post('/register', (req,res) => {
   const userID = generateRandomString();
@@ -262,19 +263,15 @@ app.post('/register', (req,res) => {
     res.status(400).send("Email already exists");
 
   } else { //Adds new user to database if no errors
-
+     const hashed = bcrypt.hashSync(req.body.password, 10);
       users[userID] = {
-      id: userID,
-      email: req.body.email,
-      password: req.body.password
-    }
-  
-    res.cookie("user_id", userID)
-  }
-  //console.log(req.body.email)
-  //console.log(req.body.password)
-  console.log(users)
-  res.redirect("/urls")
+        id: userID,
+        email: req.body.email,
+        password: hashed
+      }
+      res.cookie("user_id", userID)
+      console.log(users)
+      res.redirect("/urls");}
 })
 
 
