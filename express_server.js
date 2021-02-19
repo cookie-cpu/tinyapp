@@ -231,9 +231,9 @@ app.post('/login', (req,res) => {
   let email = req.body.email;
   let formPassword = req.body.password;
   const user = emailLookup(email)
-
+  
   if (emailLookup(email)){
-    if (users[user].password === formPassword){
+    if ((bcrypt.compareSync(formPassword, users[user].password))){
       console.log("Passwords match")
       res.cookie("user_id", user)
       res.redirect("/urls")
