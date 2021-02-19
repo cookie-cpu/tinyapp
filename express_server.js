@@ -17,10 +17,13 @@ app.set("view engine", "ejs");
 //   "b2xVn2": "http://www.lighthouselabs.ca",
 //   "9sm5xK": "http://www.google.com"
 // };
+
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
+
+
 const users = {
   "userRandomID": {
     id: "userRandomID", 
@@ -56,7 +59,7 @@ const emailLookup = function(email) {
   }  return false;
 };
 
-//takes ID
+//takes ID and database
 // returns all urls where ID matches
 const urlsForUser = function(urlDatabase, id){
   let output = {};
@@ -66,8 +69,7 @@ const urlsForUser = function(urlDatabase, id){
     }
   }
   return output
-
-}
+};
 
 
 
@@ -154,15 +156,12 @@ app.get("/urls/:shortURL", (req, res) => {
       shortURL: req.params.shortURL, 
       longURL: urlDatabase[req.params.shortURL].longURL,
       user: users[req.cookies["user_id"]] };
-      console.log(urlDatabase)
+      //console.log(urlDatabase)
     res.render("urls_show", templateVars);
   } else {
     res.send("Not autorized to see this")
   }
   // const userSpecificDB = urlsForUser(urlDatabase, req.cookies["user_id"])
-
-
-  
 });
 
 
@@ -187,19 +186,29 @@ app.post('/urls', (req, res) => {
 //Performs a database deletion and redirects back to the url homepage
 app.post("/urls/:shortURL/delete" , (req, res) => {
   if (!req.cookies["user_id"]){
+    res.send("Not autorized to delete this")
+  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID){
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls")
+  } else {
+    res.redirect("/urls")
   }
-  res.redirect("/urls")
 })
 
 
 //UPDATE
 //Updates the url by saving the new value from the form in place of the old longURL
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.newURL;
-  res.redirect("/urls")
+  if (!req.cookies["user_id"]){
+    res.redirect('/login')
+  } else if (req.cookies["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    urlDatabase[req.params.shortURL] = req.body.newURL;
+    res.redirect("/urls")
+  } else {
+    res.send("Not autorized to see this")
+  }  
 })
+
 
 
 
